@@ -169,6 +169,19 @@
 </div>
 
 
+@{
+    //Code to assign 10 points to each completed task. Points will show up in sidebar.
+    //Will need more implementation when different types of tasks are added and if they have varying point values.
+    int completedCount = 0;
+    foreach(var item in Model)
+    {
+        if (item.Completed == "Completed")
+        {
+            completedCount += 1;
+        }
+    }
+    int numPoints = completedCount * 10;
+}
 
 @*Sidebar*@
 <button hidden class="btn btn-primary" id="toggleSidebar" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasScrolling" aria-controls="offcanvasRight">Toggle right offcanvas</button>
@@ -185,10 +198,11 @@
     </div>
 
     <div class="offcanvas-body">
+        <p style="font-weight: bold">Current points: @numPoints </p>
+        <p style="font-weight: bold">Current rank: </p>
         <p>Total number of tasks: @Model.Count()</p>
         <p>Players logged in: </p>
         <p>Players invited: @hunt.Players.Count() </p>
-        <p>Current rank: </p>
         <p>Time remaining: @timeRemaining</p>
     </div>
 </div>
