@@ -4,10 +4,17 @@
 }
 <style>
     table {
-        border-style: solid;
+        border: 5px, solid, black;
+        width: 100%;
     }
-    thead {
-
+    tr {
+        width: 100px;
+    }
+    .tableDiv{
+        width: 500px;
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: 60px;
     }
 </style>
 <h1>Batch Create Users</h1>
@@ -70,12 +77,12 @@
     };
 
     function tableCreate(lines) {
-        //body reference
-        var body = document.getElementsByTagName("body")[0];
+        //div that holds the table reference
+        var tableDiv = document.getElementById("tableDiv");
 
-        //create elements <table> and a <tbody>
-        var tbl = document.createElement("table");
-        var tblBody = document.createElement("tbody");
+        //get elements <table> and a <tbody>
+        var tbl = document.getElementsByTagName("table");
+        var tblBody = document.getElementById("userData");
 
         //cells creation
         for (var rows = 0; rows < lines.length; rows++) {
@@ -98,10 +105,8 @@
         //append the <tbody> inside the <table>
         tbl.appendChild(tblBody);
         //put <table> in the <body>
-        body.appendChild(tbl);
+        tableDiv.appendChild(tbl);
         //tbl border attribute
         tbl.setAttribute("border", "2");
     }
-
-    
 </script>
