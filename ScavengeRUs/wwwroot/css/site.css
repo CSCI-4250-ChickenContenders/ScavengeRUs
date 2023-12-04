@@ -17,6 +17,13 @@ body {
     margin-bottom: 60px;
     color: #191970;
 }
+
+.tableDiv {
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 60px;
+}
+
 #taskimg {
     width: 100px;
     height: 100px;

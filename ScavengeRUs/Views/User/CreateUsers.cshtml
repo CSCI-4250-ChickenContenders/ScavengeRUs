@@ -2,9 +2,32 @@
 @{
     ViewData["Title"] = "Create Users";
 }
+<style>
+    table {
+        border-style: solid;
+    }
+    thead {
 
+    }
+</style>
 <h1>Batch Create Users</h1>
+<h3>Please upload a CSV file of user data:</h3>
+<br/>
 <input type="file" accept="csv" onchange="openFile(event)" />
+<br/>
+<div class="tableDiv">
+    <table>
+        <thead>
+            <tr>First Name | </tr>
+            <tr>Last Name | </tr>
+            <tr>Email | </tr>
+            <tr>Phone Number | </tr>
+            <tr>Carrier </tr>
+        </thead>
+        <tbody id="userData"></tbody>
+    </table>
+</div>
+
 <br />
 
 <script>
