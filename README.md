@@ -1,6 +1,5 @@
 # Buc Hunt Tier 2
-## CSCI-4250-002 Software Engineering
-## Team Chicken Contenders
+## CSCI-4250-002 Software Engineering - Team Chicken Contenders
 
 Members:
 * **Tyler Burleson** - Scrum Master
