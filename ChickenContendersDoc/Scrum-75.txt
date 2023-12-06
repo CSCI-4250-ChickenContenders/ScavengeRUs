@@ -1,0 +1,2 @@
+Scrum-75:
+I added and styled an h3 heading with instructions to upload a CSV file. I added a row of table headings for the table that populates when a CSV file is uploaded. I attempted to add styling to the table that is created but for some reason it is not applying. I think this is due to the way the table is generated and more work will be needed to fix the table styling to match the look of the page.
