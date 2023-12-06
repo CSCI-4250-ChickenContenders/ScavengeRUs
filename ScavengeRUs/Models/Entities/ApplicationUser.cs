@@ -29,5 +29,6 @@ namespace ScavengeRUs.Models.Entities
         public ICollection<string> Roles { get; set; }
     = new List<string>();
         public Carriers Carrier { get; set; }
+        public string? TeamName {  get; set; }
     }
 }

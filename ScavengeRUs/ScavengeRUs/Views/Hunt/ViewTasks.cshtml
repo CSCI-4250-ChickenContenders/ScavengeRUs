@@ -1,0 +1,353 @@
+﻿
+
+@model IEnumerable<ScavengeRUs.Models.Entities.Location>
+@using Microsoft.AspNetCore.Identity
+@{
+    var hunt = (Hunt?)ViewData["Hunt"];
+    ViewData["Title"] = "View Players of hunt";
+}
+@{
+    var timeRemaining = (hunt!.EndDate - DateTime.Now).ToString();
+    if (TimeSpan.Parse(timeRemaining).Seconds < 0)
+    {
+        timeRemaining = "Ended";
+    }
+    else
+    {
+        timeRemaining = timeRemaining.Substring(0, timeRemaining.LastIndexOf("."));
+    }
+}
+ @*Task Modal*@
+<div class="modal fade" id="createTaskModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div id="mainContent" class="modal-content">
+            <form id="createTaskModal">
+                <div class="modal-header">
+                    <h5 class="modalTitle" id="AddItemTitle">
+                        Scan QR code or enter answer
+                    </h5>
+                    <button type="button" class="btn-close"
+                            data-bs-dismiss="modal" aria-label="Close">
+                    </button>
+
+                </div>
+                <div class="modal-body">
+                    <div id="alertAreaSuccess" class="alert alert-success" role="alert" style="display:none">
+                        <span id="successMessageArea"></span>
+                    </div>
+                    <div id="alertAreaFailed" class="alert alert-danger" role="alert" style="display:none">
+                        <span id="failedMessageArea"></span>
+                    </div>
+                    <div class="form-group row mb-3">
+                        <label class="col-sm-2 col-form-label" >
+                            Question
+                        </label>
+                        <div class="col-sm-10 col-form-label" >
+                        <span id="TaskInput"></span>
+                        </div>
+                    </div>
+                    <div class="form-group row mb-3">
+                        <label class="col-sm-2 col-form-label">
+                            Answer
+                        </label>
+                        <div class="col-sm-10">
+                            <input name="Answer" id="AnswerInput" class="form-control" />
+                            <input name="TaskId" hidden id="TaskIdInput" class="form-control" />
+                            <input name="HuntId" hidden id="HuntIdInput" class="form-control" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">
+                        Enter
+                    </button>
+                    <button type="reset" class="btn btn-secondary">Clear</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@*Task Modal*@
+
+
+<div id="taskarea">
+    <div class="row">
+        <div class="col">
+            <h1>@hunt.HuntName</h1>
+        </div>
+    </div>
+    <p>
+        @if (User.IsInRole("Admin"))
+        {
+            <a asp-action="ManageTasks" asp-route-Id="@hunt.Id" class="btn btn-danger">Manage Tasks</a>
+
+            <a asp-action="ViewPlayers" asp-route-Id="@hunt.Id" class="btn btn-danger">View Players</a>
+
+            <a asp-action="Index" asp-route-Id="@hunt.Id" class="btn btn-danger">View all hunts</a>
+            <span style="color:Red;">*** Only admins can see/access the red buttons</span>
+            <hr />
+        }
+    </p>
+    <h4>Introduction Text</h4>
+    <p>@hunt.InvitationText</p>
+    <hr />
+    <br />
+    <p id="huntHeader">Tasks for @hunt.HuntName</p>
+
+    <div class="list-group">
+        @if (!Model.Any())
+        {
+            <hr>
+
+            <span style="text-align:center">No tasks are assigned to this hunt.</span>
+            @if (User.IsInRole("Admin"))
+            {
+                <a asp-action="ManageTasks" asp-route-Id="@hunt.Id" style="width: 100px; margin: auto" class="btn btn-danger mt-3">Add Tasks</a>
+            }
+            <hr />
+
+        }
+        
+        @foreach (var item in Model)
+        {
+
+            var img = $"/images/{item.Place}.jpg";
+            <div id="taskitem">
+             
+                <a data-id="@item.Id" data-task="@item.Task" data-lat="@item.Lat" data-lon="@item.Lon" data-huntid="@hunt.Id" id="btnCreateTask" class="list-group-item list-group-item-action">
+                    <div class="row" id="taskrow">
+
+                        <div class="col">
+                            <img id="taskimg" src="@img" />
+                        </div>
+                        <div class="col-6">
+                            <div class="row" id="taskheader">
+                                @Html.DisplayFor(model => item.Place)
+                            </div>
+                            <div class="row" id="taskbody">
+                                @Html.DisplayFor(model => item.Task)
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="row" id="taskstatus">
+                                <span>Status</span>
+                            </div>
+                            <div class="row" id="taskbody">
+                                @if (item.Completed == "Completed")
+                                {
+                                    <span id="status" style="color:green">Completed</span>
+                                }
+                                else
+                                {
+                                    <span id="status" style="color:red">Incomplete</span>
+                                }
+
+                            </div>
+                        </div>
+                        
+                        <div class="col">
+                            <div class="row" id="taskdistance">
+                                <span>Distance</span>
+                            </div>
+                            <div class="row" id="taskbody">
+                                <span class="distance-info"></span>
+                            </div>
+                        </div>
+
+                        <div class="col">
+                            <div class="row" id="taskAnswer">
+                                <span class="completeBtn">Complete <i class="fa-solid fa-angle-right"></i></span>
+                            </div>
+                        </div>
+                    </div>
+
+                </a>
+            </div>
+        }
+        
+
+    </div>
+
+</div>
+        
+<!-- 
+    This section of HTML represents a container for a QR code scanning button and a hidden camera modal.
+    The button, with the class "btn-primary," triggers the "requestCameraAccess" JavaScript function when 
+    clicked, initiating the camera access request.
+    The camera modal, initially hidden, is revealed when camera access is granted. It includes a video element 
+    for displaying the camera stream and a close button ("&times;") to close the modal.
+-->
+<div class="div-center">
+    <button class="btn-primary" onclick="requestCameraAccess()">Scan QR Code</button>
+    <div id="cameraModal" class="camera-modal">
+        <div class="camera-modal-content">
+            <span class="close" onclick="closeCameraModal()">&times;</span>
+            <video id="camera" autoplay></video>
+        </div>
+    </div>
+</div>
+</div>
+
+
+@*Sidebar*@
+<button hidden class="btn btn-primary" id="toggleSidebar" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasScrolling" aria-controls="offcanvasRight">Toggle right offcanvas</button>
+<div class="button left" id="openSidebar">
+    <div class="triangle-left"></div>
+</div>
+<div class="offcanvas offcanvas-end" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="offcanvasScrolling" aria-labelledby="offcanvasScrollingLabel">
+    <div class="button right" id="closeSidebar">
+        <div class="triangle-right"></div>
+    </div>
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasScrollingLabel">Hunt stats</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+
+    <div class="offcanvas-body">
+        <p>Total number of tasks: @Model.Count()</p>
+        <p>Players logged in: </p>
+        <p>Players invited: @hunt.Players.Count() </p>
+        <p>Current rank: </p>
+        <p>Time remaining: @timeRemaining</p>
+    </div>
+</div>
+
+<!-- 
+    Javascript code to determine of a user is within 50ft of a task, 
+    as well as to request camera access and scan a QR code.
+    -->
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.0.1/dist/jsQR.js"></script>
+
+
+<script>
+    //Kept having issues with updateDistances function,
+    // needs to be defined outside of eventListener
+    function updateDistances(userCoords) {
+            taskItems.forEach(function (taskItem) {
+                var taskLat = parseFloat(taskItem.getAttribute('data-lat'));
+                var taskLon = parseFloat(taskItem.getAttribute('data-lon'));
+                var distanceInMeters = distanceToLocation(userCoords, taskLat, taskLon);
+                var distanceInFeet = metresToFeet(distanceInMeters);
+
+                // Now can display the current distance from a task in feet next to the task itself
+                var distanceElement = taskItem.querySelector('.distance-info');
+                distanceElement.textContent = distanceInFeet.toFixed(2) + ' feet';
+            });
+        }
+    document.addEventListener('DOMContentLoaded', function () {
+        var taskItems = document.querySelectorAll('#btnCreateTask');
+
+        
+        getLocationAsync(function (userCoords) {
+            // Handle the obtained user coordinates
+            console.log('User coordinates:', userCoords);
+
+            // Call updateDistances with the obtained user coordinates
+            updateDistances(userCoords);
+        }, function (error) {
+            console.error('Error getting user location:', error);
+            // Handle error
+        });
+
+
+        taskItems.forEach(function (taskItem) {
+            taskItem.addEventListener('click', function (event) {
+                var taskLat = parseFloat(taskItem.getAttribute('data-lat'));
+                var taskLon = parseFloat(taskItem.getAttribute('data-lon'));
+
+                getLocationAsync(function (coords) {
+                    // Call updateDistances with user coordinates when available
+                    updateDistances(coords);
+
+                    var distance = distanceToLocation(coords, taskLat, taskLon);
+
+                    if (distance <= 50) {
+                        // User is close enough to the task, allow them to answer
+                        // Show the modal or perform other actions
+                        console.log("User is close enough to the task.");
+                        $('#TaskIdInput').val(taskItem.getAttribute('data-id'));
+                        $('#HuntIdInput').val(taskItem.getAttribute('data-huntid'));
+                        $('#TaskInput').text(taskItem.getAttribute('data-task'));
+                        createTaskModal.show();
+                    } else {
+                        // Inform the user that they are not close enough to the task
+                        console.log('You are not close enough to access this task.');
+                    }
+                }, function (error) {
+                    console.error('Error getting user location:', error);
+                    // Handle error, e.g., inform the user or retry
+                });
+            });
+        });
+    });
+
+    /**
+ * Requests access to the user's camera and displays the camera stream in a modal.
+ */
+function requestCameraAccess() {
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then((stream) => {
+            const video = document.getElementById('camera');
+            video.srcObject = stream;
+            document.getElementById('cameraModal').style.display = 'block';
+            video.play();
+            startQRCodeScanner(video);
+        })
+        .catch((error) => {
+            console.error('Error accessing camera:', error);
+        });
+}
+
+    /**
+    * Starts the QR code scanner by continuously capturing frames from the camera stream.
+    * Invokes the handleQRCodeDetected function when a QR code is successfully detected.
+    * param {HTMLVideoElement} video - The video element displaying the camera stream.
+    */
+    function startQRCodeScanner(video) {
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+
+        const scanFrame = () => {
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+            console.log(jsQR);
+            const code = jsQR(imageData.data, imageData.width, imageData.height);
+            if (code) {
+                handleQRCodeDetected(code.data);
+            } else {
+                requestAnimationFrame(scanFrame);
+            }
+        };
+
+        video.addEventListener('loadeddata', () => {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;3
+            scanFrame();
+        });
+    }
+
+    /**
+    * Handles the detected QR code data.
+    * Logs the QR code data to the console and closes the camera modal.
+    * param {string} qrCodeData - The data extracted from the detected QR code.
+    */
+    function handleQRCodeDetected(qrCodeData) {
+        // Handle the detected QR code data
+        console.log('Detected QR Code:', qrCodeData);
+        window.location.href = qrCodeData;
+        closeCameraModal();
+    }
+
+    /**
+    * Closes the camera modal, pauses the video stream, and stops camera tracks.
+    */
+    function closeCameraModal() {
+        const video = document.getElementById('camera');
+        const modal = document.getElementById('cameraModal');
+        video.pause();
+        video.srcObject.getTracks().forEach(track => track.stop());
+        modal.style.display = 'none';
+    }
+
+</script>
+

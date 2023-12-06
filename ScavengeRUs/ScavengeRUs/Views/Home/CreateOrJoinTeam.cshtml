@@ -1,0 +1,66 @@
+﻿
+
+@{
+    ViewData["Title"] = "Create or Join a Team";
+}
+
+<h1>Create or Join a Team</h1>
+<div class="btn-div">
+    <button type="button" id="btn-Create" class="w-100 btn btn-lg btn-primary" onclick="createTeam()">Create Team</button>
+</div>
+<div class="btn-div">
+    <button type="button" id="btn-Join" class="w-100 btn btn-lg btn-primary" onclick="openJoinTeamDialog()">Join Team</button>
+</div>
+
+    <!--Pop up window dialog  -->
+<dialog id="joinTeamDialog">
+    <label for="teamName">Enter Team Name:</label>
+    <input type="text" id="teamName" name="teamName" />
+    <br /><br />
+    <button type="button" onclick="submitTeam()">Submit</button>
+    <button type="button" onclick="closeJoinTeamDialog()">Cancel</button>
+</dialog>
+
+<script>
+    function openJoinTeamDialog() {
+        // Show the dialog
+        document.getElementById('joinTeamDialog').showModal();
+    }
+
+    function closeJoinTeamDialog() {
+        // Close the dialog
+        document.getElementById('joinTeamDialog').close();
+    }
+
+    //
+    // This method is designed to send a POST request to the usercontroller method "UpdateTeamName" to add a user to a team.
+    //
+    function submitTeam() {
+    // Get the team name entered by the user
+    var teamName = document.getElementById('teamName').value;
+
+    // Close the dialog
+    closeJoinTeamDialog();
+
+    // Send an AJAX request to update the team name
+    $.ajax({
+        type: 'POST',
+        url: '/User/UpdateTeamName', 
+        data: { teamName: teamName },
+        success: function (response) {
+            alert("Added to team: " + teamName);
+            console.log(response);
+            window.location.href = '/Hunt/TeamPage';
+        },
+        error: function (error) {
+            alert("Invalid Team name! Please try again...")
+            console.error(error);
+        }
+    });
+    //call generateCode and assign the team name to the user
+    function createTeam(){
+
+    }
+}
+</script>
+

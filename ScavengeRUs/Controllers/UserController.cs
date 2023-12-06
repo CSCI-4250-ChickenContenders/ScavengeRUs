@@ -22,6 +22,8 @@ namespace ScavengeRUs.Controllers
     {
         private readonly IUserRepository _userRepo;
         private readonly Functions _functions;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly CodeGenerator _codeGenerator;
         string defaultPassword = "Etsupass12!";
 
         /// <summary>
@@ -139,7 +141,12 @@ namespace ScavengeRUs.Controllers
                 user.UserName = user.Email;
                 await _userRepo.CreateAsync(user, defaultPassword);
                 return RedirectToAction("Details", new { id = user.UserName });
+                //Line automatically creates a team name for a user upon creation
+                string teamCode = _codeGenerator.GenerateUniqueCode();
+                
+                user.TeamName = teamCode;
             }
+            Console.WriteLine(user.FirstName + user.LastName + user.TeamName);
             return View(user);
             
         }
@@ -163,6 +170,42 @@ namespace ScavengeRUs.Controllers
             return View();
         }
 
-        
+        /// <summary>
+    /// This Task updates the team name for an application user using the
+    /// provided team name, and in later iterations will write to this change
+    /// to the database.
+    /// </summary>
+    /// <param name="teamName"></param>
+    /// <returns></returns>
+    [HttpPost]
+    public async Task<IActionResult> UpdateTeamName(string teamName)
+    {
+        try
+        {
+            // Get the current user
+            var currentUser = await _userManager.GetUserAsync(User);
+
+            // Check if the user exists
+            if (currentUser == null)
+            {
+                return NotFound();
+            }
+
+            // Update the TeamName property
+            currentUser.TeamName = teamName;
+
+            // Update the user in the database
+            await _userManager.UpdateAsync(currentUser);
+
+            // Optionally, you can return a success message or redirect to a different page
+            return Ok(new { Message = "Team name updated successfully." });
+        }
+        catch (Exception ex)
+        {
+            // Handle exceptions if needed
+            return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "Error updating team name." });
+        }
+    }
+
     }
 }
